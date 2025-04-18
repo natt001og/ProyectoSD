@@ -1,4 +1,4 @@
 <<<<<<< HEAD
 # ProyectoSD
-holamamita me da su wasap
+mi wasap y mas te doy
 
