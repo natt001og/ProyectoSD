@@ -1,3 +1,4 @@
-# Proyecto-SD
-hola
-como estas
+<<<<<<< HEAD
+# ProyectoSD
+si me deja modificarlo :p 
+
