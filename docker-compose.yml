@@ -1,0 +1,14 @@
+version: '3.8'
+services:
+  scraper:
+    build:
+      context: ./scraper
+    container_name: scraper
+    volumes:
+      - ./scraper:/app
+    networks:
+      - redesd
+
+networks:
+  redesd:
+    driver: bridge

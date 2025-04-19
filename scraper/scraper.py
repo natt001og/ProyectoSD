@@ -1,23 +1,39 @@
 import requests
 import json
+import os
+from datetime import datetime
 
+#URL de la api a la que llaman las peticiones GET
+url = "https://www.waze.com/live-map/api/georss"
+# Coordenadas para la parte de RM a scrapear
 params = {
-    "bottom": -33.5000,
-    "left": -70.8000,
-    "top": -33.3000,
-    "right": -70.6000,
-    "types": "alerts,traffic,irregularities"
+    "top": -33.4466,
+    "bottom": -33.4581,
+    "left": -70.6950,
+    "right": -70.6274,
+    "env": "row",
+    "types": "alerts,traffic,users"
 }
-
-url = "https://www.waze.com/row-rtserver/web/TGeoRSS"
 headers = {
-    "User-Agent": "Mozilla/5.0"
+    "User-Agent": "Mozilla/5.0",
+    "Referer": "https://www.waze.com/"
 }
 
 response = requests.get(url, params=params, headers=headers)
-data = response.json()
 
-with open("waze_data.json", "w", encoding="utf-8") as f:
-    json.dump(data, f, indent=4, ensure_ascii=False)
+if response.status_code == 200:
+    raw_data = response.json()
+    
+    # Crea la carpeta 'scraper/data' si no existe
+    os.makedirs("scraper/data", exist_ok=True)
 
-print("✅ Datos guardados en waze_data.json")
+    # Usa timestamp para no sobreescribir archivos
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"scraper/data/waze_data_{timestamp}.json"
+
+    with open(filename, "w", encoding="utf-8") as f:
+        json.dump(raw_data, f, indent=2, ensure_ascii=False)
+
+    print(f" Datos guardados correctamente en {filename}")
+else:
+    print(f"Error al obtener datos: {response.status_code}")
