@@ -2,7 +2,6 @@ version: '3.8'
 services:
   mongo:
     image: mongo
-    container_name: mongo
     ports:
       - "27017:27017"
     networks:
@@ -10,15 +9,13 @@ services:
 
   scraper:
     build:
-      context: ./scraper
-    container_name: scraper
+      context: ./scraper   
     volumes:
-      - ./scraper:/app
+      - ./scraper:/app     
     depends_on:
       - mongo
     networks:
       - redesd
-
 
 networks:
   redesd:
