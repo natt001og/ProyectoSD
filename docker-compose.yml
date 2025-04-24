@@ -1,14 +1,38 @@
 version: '3.8'
 services:
+  mongo:
+    image: mongo
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    networks:
+      - redesd
+
   scraper:
     build:
       context: ./scraper
     container_name: scraper
     volumes:
       - ./scraper:/app
+    depends_on:
+      - mongo
+    networks:
+      - redesd
+
+  cache:
+    build:
+      context: ./cache
+    container_name: cache
+    volumes:
+      - ./cache:/app
+    depends_on:
+      - mongo
     networks:
       - redesd
 
 networks:
   redesd:
     driver: bridge
+
+
+

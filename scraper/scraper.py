@@ -1,16 +1,18 @@
 import requests
-import json
-import os
-from datetime import datetime
+import time
+from pymongo import MongoClient
 
-#URL de la api a la que llaman las peticiones GET
-url = "https://www.waze.com/live-map/api/georss"
-# Coordenadas para la parte de RM a scrapear
+# Conexión a MongoDB (servicio llamado 'mongo' en docker-compose)
+client = MongoClient("mongodb://mongo:27017/")
+db = client["trafico"]
+collection = db["eventos"]
+
+# Configuración del área geográfica (centro de Santiago)
 params = {
-    "top": -33.4466,
-    "bottom": -33.4581,
+    "top": -33.4250,
+    "bottom": -33.4650,
     "left": -70.6950,
-    "right": -70.6274,
+    "right": -70.6150,
     "env": "row",
     "types": "alerts,traffic,users"
 }
@@ -19,21 +21,32 @@ headers = {
     "Referer": "https://www.waze.com/"
 }
 
-response = requests.get(url, params=params, headers=headers)
+def obtener_eventos_waze():
+    url = "https://www.waze.com/live-map/api/georss"
+    eventos_totales = 0
+    bloque = 0
 
-if response.status_code == 200:
-    raw_data = response.json()
-    
-    # Crea la carpeta 'scraper/data' si no existe
-    os.makedirs("scraper/data", exist_ok=True)
+    while eventos_totales < 10500:
+        response = requests.get(url, params=params, headers=headers)
+        if response.status_code == 200:
+            data = response.json()
+            eventos = data.get("alerts", []) + data.get("irregularities", [])
+            if eventos:
+                collection.insert_many(eventos)
+                eventos_totales += len(eventos)
+                bloque += 1
+                print(f"Bloque {bloque}: Se guardaron {len(eventos)} eventos. Total acumulado: {eventos_totales}")
+            else:
+                print("No se encontraron eventos nuevos en este bloque.")
+        else:
+            print(f"Error en la solicitud: {response.status_code}")
 
-    # Usa timestamp para no sobreescribir archivos
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"scraper/data/waze_data_{timestamp}.json"
+        # Esperar 5 minutos antes del siguiente scraping
+        time.sleep(30)
 
-    with open(filename, "w", encoding="utf-8") as f:
-        json.dump(raw_data, f, indent=2, ensure_ascii=False)
+    print("Scraping completo")
 
-    print(f" Datos guardados correctamente en {filename}")
-else:
-    print(f"Error al obtener datos: {response.status_code}")
+if __name__ == "__main__":
+    obtener_eventos_waze()
+
+
