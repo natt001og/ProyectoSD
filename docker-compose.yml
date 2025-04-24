@@ -19,16 +19,6 @@ services:
     networks:
       - redesd
 
-  cache:
-    build:
-      context: ./cache
-    container_name: cache
-    volumes:
-      - ./cache:/app
-    depends_on:
-      - mongo
-    networks:
-      - redesd
 
 networks:
   redesd:
