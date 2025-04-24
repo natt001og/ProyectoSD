@@ -42,7 +42,7 @@ def obtener_eventos_waze():
             print(f"Error en la solicitud: {response.status_code}")
 
         # Esperar 5 minutos antes del siguiente scraping
-        time.sleep(30)
+        time.sleep(300)
 
     print("Scraping completo")
 
