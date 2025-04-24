@@ -6,6 +6,7 @@ client = MongoClient("mongodb://mongo:27017/")
 db = client["trafico"]
 collection = db["eventos"]
 
+
 def obtener_eventos_waze():
     url = "https://www.waze.com/live-map/api/georss"
     # Configuración para scrapear el centro
