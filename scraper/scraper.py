@@ -1,49 +1,51 @@
 import requests
-import time
 from pymongo import MongoClient
 
+# Conexión a MongoDB
 client = MongoClient("mongodb://mongo:27017/")
 db = client["trafico"]
-collection = db["eventos"]
+collection = db["eventos10000"]
 
+# Crear índice único en 'uuid' para evitar duplicados
+collection.create_index("uuid", unique=True)
 
-def obtener_eventos_waze():
+def capturar_eventos():
     url = "https://www.waze.com/live-map/api/georss"
-    # Configuración para scrapear el centro
+    
+    # Tu zona específica
     params = {
-        "top": -33.4250,
-        "bottom": -33.4650,
-        "left": -70.6950,
-        "right": -70.6150,
+        "top": -33.41251384431723,
+        "bottom": -33.41839213779204,
+        "left": -70.66993653774263,
+        "right": -70.64592540264131,
         "env": "row",
-        "types": "alerts,traffic,users"
+        "types": "alerts"
     }
+    
     headers = {
         "User-Agent": "Mozilla/5.0",
         "Referer": "https://www.waze.com/"
     }
 
-    eventos_totales = 0
-    while eventos_totales < 10500:
-        response = requests.get(url, params=params, headers=headers)
-        if response.status_code == 200:
-            data = response.json()
-            eventos = data.get("alerts", []) + data.get("irregularities", [])
-            if eventos:
-                collection.insert_many(eventos)
-                eventos_totales += len(eventos)
-                print(f"Se guardaron {len(eventos)} eventos. Total acumulado: {eventos_totales}")
-            else:
-                print("No se encontraron eventos nuevos en este bloque.")
-        else:
-            print(f"Error en la solicitud: {response.status_code}")
+    response = requests.get(url, params=params, headers=headers)
 
-        # Esperar 10 segundoss antes del siguiente scraping
-        time.sleep(10)
+    if response.status_code == 200:
+        data = response.json()
+        alertas = data.get("alerts", [])
 
-    print("Scraping completo")
+        nuevas = 0
+        for alerta in alertas:
+            try:
+                collection.insert_one(alerta)
+                nuevas += 1
+            except Exception as e:
+                if "duplicate key error" not in str(e):
+                    print("Error al insertar:", e)
+
+        print(f"{nuevas} nuevas alertas guardadas en MongoDB.")
+    else:
+        print("Error al obtener datos:", response.status_code)
 
 if __name__ == "__main__":
-    obtener_eventos_waze()
-
+    capturar_eventos()
 
