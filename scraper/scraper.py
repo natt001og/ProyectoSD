@@ -1,15 +1,20 @@
 import requests
-import time
 from pymongo import MongoClient
 
+# Conexión a MongoDB
 client = MongoClient("mongodb://mongo:27017/")
 db = client["trafico"]
 collection = db["eventos3"]
+collection = db["eventos10000"]
+>>>>>>> 4a419aab6945a806081e3a323f7ae0f1bf70b3f7
 
+# Crear índice único en 'uuid' para evitar duplicados
+collection.create_index("uuid", unique=True)
 
-def obtener_eventos_waze():
+def capturar_eventos():
     url = "https://www.waze.com/live-map/api/georss"
-    # Configuración para scrapear el centro
+    
+    # Tu zona específica
     params = {
         "top": -34.983312784762894,
         "bottom": -34.98977870345623,
@@ -18,6 +23,7 @@ def obtener_eventos_waze():
         "env": "row",
         "types": "alerts"
     }
+    
     headers = {
         "User-Agent": "Mozilla/5.0",
         "Referer": "https://www.waze.com/"
@@ -38,12 +44,23 @@ def obtener_eventos_waze():
         else:
             print(f"Error en la solicitud: {response.status_code}")
 
-        # Esperar 10 segundoss antes del siguiente scraping
-        time.sleep(10)
+    if response.status_code == 200:
+        data = response.json()
+        alertas = data.get("alerts", [])
 
-    print("Scraping completo")
+        nuevas = 0
+        for alerta in alertas:
+            try:
+                collection.insert_one(alerta)
+                nuevas += 1
+            except Exception as e:
+                if "duplicate key error" not in str(e):
+                    print("Error al insertar:", e)
+
+        print(f"{nuevas} nuevas alertas guardadas en MongoDB.")
+    else:
+        print("Error al obtener datos:", response.status_code)
 
 if __name__ == "__main__":
-    obtener_eventos_waze()
-
+    capturar_eventos()
 

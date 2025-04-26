@@ -26,6 +26,9 @@ sudo docker-compose up
 
 El scraper se ejecutará y guardará los datos en formato JSON en el contenedor (puedes modificarlo para guardar en volumen compartido o base de datos en el futuro).
 
+## Ingresar a Mongo
+
+
 
 ## 📌 Notas
 
