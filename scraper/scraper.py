@@ -1,17 +1,16 @@
 import requests
-from pymongo import MongoClient
+from pymongo import MongoClient, errors
 
 # Conexión a MongoDB
 client = MongoClient("mongodb://mongo:27017/")
 db = client["trafico"]
 collection = db["eventos10000"]
 
-# Crear índice único en 'uuid' para evitar duplicados
+# Crear índice único en 'uuid'
 collection.create_index("uuid", unique=True)
 
 def capturar_eventos():
     url = "https://www.waze.com/live-map/api/georss"
-    
     params = {
         "top": -33.44067122117045,
         "bottom": -33.44347517754554,
@@ -20,44 +19,44 @@ def capturar_eventos():
         "env": "row",
         "types": "alerts"
     }
-    
+
     headers = {
         "User-Agent": "Mozilla/5.0",
         "Referer": "https://www.waze.com/"
     }
 
     eventos_totales = 0
+    vistos = set()
+
     while eventos_totales < 10500:
         response = requests.get(url, params=params, headers=headers)
-        if response.status_code == 200:
-            data = response.json()
-            eventos = data.get("alerts", [])
-            if eventos:
-                collection.insert_many(eventos)
-                eventos_totales += len(eventos)
-                print(f"Se guardaron {len(eventos)} eventos. Total acumulado: {eventos_totales}")
-            else:
-                print("No se encontraron eventos nuevos en este bloque.")
-        else:
+        if response.status_code != 200:
             print(f"Error en la solicitud: {response.status_code}")
+            continue
 
-    if response.status_code == 200:
         data = response.json()
-        alertas = data.get("alerts", [])
+        eventos = data.get("alerts", [])
 
-        nuevas = 0
-        for alerta in alertas:
+        nuevos_eventos = []
+        for e in eventos:
+            uuid = e.get("uuid")
+            if uuid and uuid not in vistos:
+                vistos.add(uuid)
+                nuevos_eventos.append(e)
+
+        if nuevos_eventos:
             try:
-                collection.insert_one(alerta)
-                nuevas += 1
-            except Exception as e:
-                if "duplicate key error" not in str(e):
-                    print("Error al insertar:", e)
-
-        print(f"{nuevas} nuevas alertas guardadas en MongoDB.")
-    else:
-        print("Error al obtener datos:", response.status_code)
+                result = collection.insert_many(nuevos_eventos, ordered=False)
+                eventos_insertados = len(result.inserted_ids)
+                eventos_totales += eventos_insertados
+                print(f"Insertados {eventos_insertados} eventos. Total acumulado: {eventos_totales}")
+            except errors.BulkWriteError as bwe:
+                # Solo cuenta los que sí fueron insertados
+                inserted = len(bwe.details.get("writeErrors", []))
+                eventos_totales += len(nuevos_eventos) - inserted
+                print(f"Insertados con duplicados. Total acumulado: {eventos_totales}")
+        else:
+            print("No se encontraron eventos nuevos.")
 
 if __name__ == "__main__":
     capturar_eventos()
-

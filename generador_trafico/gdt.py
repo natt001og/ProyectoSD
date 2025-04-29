@@ -1,13 +1,22 @@
 import time
-import random
 import requests
 import numpy as np
 
 API_URL = "http://cache:5000/evento"  # La API de caché escucha en este endpoint
 
-# Puedes cambiar esto a "zipf" para probar otro modelo
 MODELO = "poisson"
 TOTAL_CONSULTAS = 1000
+
+def esperar_cache_disponible(url, reintentos=10, espera=2):
+    for intento in range(reintentos):
+        try:
+            response = requests.get(url)
+            if response.status_code == 200:
+                return response
+        except requests.exceptions.ConnectionError:
+            print(f"Intento {intento+1}/{reintentos}: cache no disponible aún, esperando {espera}s...")
+            time.sleep(espera)
+    raise Exception("No se pudo conectar con el cache luego de varios intentos.")
 
 def obtener_uuid_random_poisson(eventos, lam=10):
     idx = int(np.random.exponential(lam))
@@ -18,14 +27,12 @@ def obtener_uuid_random_zipf(eventos, a=2.0):
     return eventos[idx % len(eventos)]["uuid"]
 
 def main():
-    # Obtener lista de eventos desde la API
-    response = requests.get("http://cache:5000/eventos")
-    if response.status_code != 200:
-        print("No se pudo obtener eventos.")
-        return
-
+    response = esperar_cache_disponible("http://cache:5000/eventos")
     eventos = response.json()
     print(f"Se obtuvieron {len(eventos)} eventos.")
+
+    hits = 0
+    misses = 0
 
     for _ in range(TOTAL_CONSULTAS):
         if MODELO == "poisson":
@@ -34,9 +41,17 @@ def main():
             uuid = obtener_uuid_random_zipf(eventos)
 
         r = requests.get(f"{API_URL}/{uuid}")
-        print(f"[{MODELO.upper()}] Consulta UUID {uuid}: {r.json()['status']}")
-        time.sleep(0.1)
+        estado = r.json()["status"]
+        print(f"[{MODELO.upper()}] Consulta UUID {uuid}: {estado}")
+
+        if estado == "hit":
+            hits += 1
+        else:
+            misses += 1
+
+        time.sleep(0.01)
+
+    print(f"\nResumen final: {hits} hits, {misses} misses")
 
 if __name__ == "__main__":
     main()
-
