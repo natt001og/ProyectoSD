@@ -17,7 +17,7 @@ def get_evento(uuid):
     else:
         evento = collection.find_one({"uuid": uuid}, {"_id": 0})
         if evento:
-            r.set(uuid, json.dumps(evento), ex=300)  # TTL = 5 minutos
+            r.set(uuid, json.dumps(evento), ex=1200)  # TTL = 20 minutos
             return jsonify({"status": "miss", "evento": evento})
         else:
             return jsonify({"status": "miss", "evento": None}), 404
