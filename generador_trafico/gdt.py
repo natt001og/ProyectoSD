@@ -6,7 +6,7 @@ import numpy as np
 API_URL = "http://cache:5000/evento"  # La API de caché escucha en este endpoint
 
 # Puedes cambiar esto a "zipf" para probar otro modelo
-MODELO = "poisson"
+MODELO = "zipf"
 TOTAL_CONSULTAS = 1000
 
 def obtener_uuid_random_poisson(eventos, lam=10):
