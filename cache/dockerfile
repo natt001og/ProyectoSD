@@ -1,0 +1,9 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+
+COPY cache.py .
+
+RUN pip install flask pymongo redis
+
+CMD ["python", "cache.py"]

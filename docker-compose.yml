@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   mongo:
     image: mongo
@@ -6,7 +5,15 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - mongodb_data:/data/db  # 👈 Volumen persistente añadido
+      - mongodb_data:/data/db
+    networks:
+      - redesd
+
+  redis: 
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
     networks:
       - redesd
 
@@ -21,12 +28,31 @@ services:
     networks:
       - redesd
 
+  cache:
+    build: ./cache
+    container_name: cache
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - redesd
+
+  generador_trafico:
+    build: ./generador_trafico
+    container_name: generador_trafico
+    depends_on:
+      - cache
+    networks:
+      - redesd
+
 networks:
   redesd:
     driver: bridge
 
 volumes:
-  mongodb_data:  
+  mongodb_data:
 
 
 
