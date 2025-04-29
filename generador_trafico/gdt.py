@@ -4,7 +4,7 @@ import requests
 import numpy as np
 
 # Configuración
-TOTAL_UUIDS = 8000  # Total de UUIDs en tu sistema
+TOTAL_UUIDS = 10500  
 MEAN = TOTAL_UUIDS // 2  # Centro de la distribución (p. ej. UUIDs alrededor del 5000 serán más frecuentes)
 STD_DEV = TOTAL_UUIDS // 4  # Desviación estándar (ajusta para controlar la dispersión)
 CACHE_SERVER_URL = "http://cache:5000/evento"
