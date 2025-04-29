@@ -3,7 +3,7 @@ import redis
 import json
 from pymongo import MongoClient
 
-app = Flask(__name__)
+app = Flask(_name_)
 r = redis.Redis(host='redis', port=6379, decode_responses=True)
 mongo = MongoClient("mongodb://mongo:27017/")
 collection = mongo["trafico"]["eventos10000"]
@@ -17,7 +17,7 @@ def get_evento(uuid):
     else:
         evento = collection.find_one({"uuid": uuid}, {"_id": 0})
         if evento:
-            r.set(uuid, json.dumps(evento), ex=300)  # TTL = 5 minutos
+            r.set(uuid, json.dumps(evento), ex=1200)  # TTL = 20 minutos
             return jsonify({"status": "miss", "evento": evento})
         else:
             return jsonify({"status": "miss", "evento": None}), 404
@@ -27,5 +27,5 @@ def get_uuids():
     eventos = list(collection.find({}, {"uuid": 1, "_id": 0}).limit(10000))
     return jsonify(eventos)
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+if _name_ == "_main_":
+    app.run(host="0.0.0.0", port=5000)
