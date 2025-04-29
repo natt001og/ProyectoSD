@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   mongo:
     image: mongo
@@ -9,11 +11,12 @@ services:
     networks:
       - redesd
 
-  redis: 
+  redis:
     image: redis:latest
     container_name: redis
     ports:
       - "6379:6379"
+    command: redis-server --maxmemory 50mb --maxmemory-policy allkeys-lru
     networks:
       - redesd
 
@@ -53,6 +56,8 @@ networks:
 
 volumes:
   mongodb_data:
+
+
 
 
 

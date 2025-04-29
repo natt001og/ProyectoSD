@@ -1,32 +1,42 @@
-import random
 import time
+import random
 import requests
 import numpy as np
 
-# Configuración
-TOTAL_UUIDS = 10500  
-MEAN = TOTAL_UUIDS // 2  # Centro de la distribución (p. ej. UUIDs alrededor del 5000 serán más frecuentes)
-STD_DEV = TOTAL_UUIDS // 4  # Desviación estándar (ajusta para controlar la dispersión)
-CACHE_SERVER_URL = "http://cache:5000/evento"
+API_URL = "http://cache:5000/evento"  # La API de caché escucha en este endpoint
 
-def generar_uuid_normal():
-    """Genera un índice UUID siguiendo una distribución normal."""
-    idx = int(np.random.normal(MEAN, STD_DEV))
-    idx = max(0, min(idx, TOTAL_UUIDS - 1))  # Asegura que esté en el rango [0, TOTAL_UUIDS-1]
-    return f"uuid-{idx:08d}"  # Formato: uuid-00005000 (simula un UUID real)
+# Puedes cambiar esto a "zipf" para probar otro modelo
+MODELO = "poisson"
+TOTAL_CONSULTAS = 1000
 
-def generar_trafico():
-    """Envía consultas al cache con distribución normal."""
-    while True:
-        uuid = generar_uuid_normal()
-        try:
-            response = requests.get(f"{CACHE_SERVER_URL}/{uuid}")
-            print(f"Consulta {uuid}: HTTP {response.status_code}")
-        except Exception as e:
-            print(f"Error consultando {uuid}: {str(e)}")
-        
-        time.sleep(random.uniform(0.1, 1.0))  # Espera aleatoria entre 0.1s y 1s
+def obtener_uuid_random_poisson(eventos, lam=10):
+    idx = int(np.random.exponential(lam))
+    return eventos[idx % len(eventos)]["uuid"]
+
+def obtener_uuid_random_zipf(eventos, a=2.0):
+    idx = np.random.zipf(a) - 1
+    return eventos[idx % len(eventos)]["uuid"]
+
+def main():
+    # Obtener lista de eventos desde la API
+    response = requests.get("http://cache:5000/eventos")
+    if response.status_code != 200:
+        print("No se pudo obtener eventos.")
+        return
+
+    eventos = response.json()
+    print(f"Se obtuvieron {len(eventos)} eventos.")
+
+    for _ in range(TOTAL_CONSULTAS):
+        if MODELO == "poisson":
+            uuid = obtener_uuid_random_poisson(eventos)
+        else:
+            uuid = obtener_uuid_random_zipf(eventos)
+
+        r = requests.get(f"{API_URL}/{uuid}")
+        print(f"[{MODELO.upper()}] Consulta UUID {uuid}: {r.json()['status']}")
+        time.sleep(0.1)
 
 if __name__ == "__main__":
-    print(f"Generando tráfico con distribución normal (μ={MEAN}, σ={STD_DEV})...")
-    generar_trafico()
+    main()
+
