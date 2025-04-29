@@ -2,10 +2,9 @@ import time
 import requests
 import numpy as np
 
-API_URL = "http://cache:5000/evento"  # La API de caché escucha en este endpoint
-
+API_URL = "http://cache:5000/evento"
 MODELO = "poisson"
-TOTAL_CONSULTAS = 1000
+TOTAL_CONSULTAS = 50000
 
 def esperar_cache_disponible(url, reintentos=10, espera=2):
     for intento in range(reintentos):
@@ -27,9 +26,7 @@ def obtener_uuid_random_zipf(eventos, a=2.0):
     return eventos[idx % len(eventos)]["uuid"]
 
 def main():
-    # Registrar el tiempo de inicio
     inicio = time.time()
-
     response = esperar_cache_disponible("http://cache:5000/eventos")
     eventos = response.json()
     print(f"Se obtuvieron {len(eventos)} eventos.")
@@ -54,12 +51,10 @@ def main():
 
         time.sleep(0.01)
 
-    # Calcular el tiempo total
     fin = time.time()
     tiempo_total = fin - inicio
-
     print(f"\nResumen final: {hits} hits, {misses} misses")
     print(f"Tiempo total de las consultas: {tiempo_total:.2f} segundos")
 
-if _name_ == "_main_":
-    main()
+if __name__ == "__main__":
+    main()

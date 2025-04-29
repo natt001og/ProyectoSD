@@ -58,5 +58,6 @@ def capturar_eventos():
     else:
         print("Error al obtener datos:", response.status_code)
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     capturar_eventos()
+
