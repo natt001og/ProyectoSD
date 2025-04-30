@@ -1,8 +1,8 @@
 # Entrega Proyecto Parte 1 Sistemas Distribuídos 🚗📊
 
 ## Importante 
-Actualmente te encuentras en nuestra rama main donde armamos el codigo principal
-Sin embargo, en honor a los distintos tipos de cache implementados con sus respectivos distintos generadores de tráfico,, se crearon 4 ramas en total: 
+Actualmente te encuentras en nuestra rama main donde armamos el codigo principal.
+Sin embargo, en honor a los distintos tipos de cache implementados con sus respectivos distintos generadores de tráfico, se crearon 4 ramas en total: 
 
 rama_cacheP1: Sistema de remoción del cache -> LRU - 50mb
               Distribucíon generador de tráfico -> Poisson
@@ -13,7 +13,7 @@ rama_cacheZ1: Sistema de remoción del cache -> LRU - 50mb
 rama_cacheP1: Sistema de remoción del cache -> LFU - 100mb
               Distribucíon generador de tráfico -> Zipf
 
-Cada una de estas ramas tiene exactamente la misma estructura, solo se hicieron los ca,bios correpondientes en docker-compose.yml para el tipo de cache y tamaño, y los cambios correspondientes en gdt.py para el tipo de distribución seguida por el generador de tráfico.
+Cada una de estas ramas tiene exactamente la misma estructura, solo se hicieron los cambios correpondientes en docker-compose.yml para el tipo de cache y tamaño, y los cambios correspondientes en gdt.py para el tipo de distribución seguida por el generador de tráfico.
 
 ## Arquitectura General
 
@@ -55,7 +55,7 @@ El scraper se ejecutará y guardará los datos en formato JSON en el contenedor 
 Se levvantaran todos los contenedores y se realizaran consultas en seguida al sistema.
 
 ## 📂 Estructura del proyecto
-
+```bash
 .
 ├── scraper/              # Scraper de eventos desde Waze
 │   └── scraper.py
@@ -70,6 +70,7 @@ Se levvantaran todos los contenedores y se realizaran consultas en seguida al si
 ├── docker-compose.yml    # Orquestación de contenedores
 └── README.md             # Este archivo
 
+```
 ## 🛠 Tecnologías utilizadas
 
     Python (scraping, servidor REST, generación de tráfico)
