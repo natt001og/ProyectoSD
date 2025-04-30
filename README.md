@@ -1,26 +1,29 @@
-# Entrega Proyecto Parte 1 Sistemas Distribuídos 🚗📊
+# Entrega Proyecto Parte 1 Sistemas Distribuidos 🚗📊
 
 ## Importante 
-Actualmente te encuentras en nuestra rama main donde armamos el codigo principal.
-Sin embargo, en honor a los distintos tipos de cache implementados con sus respectivos distintos generadores de tráfico, se crearon 4 ramas en total: 
+Actualmente te encuentras en nuestra rama main en donde se armó el código principal.
+Sin embargo, en honor a los distintos tipos de caché implementados con sus respectivos distintos generadores de tráfico, se crearon 4 ramas en total: 
 
 rama_cacheP1: Sistema de remoción del cache -> LRU - 50mb
-              Distribucíon generador de tráfico -> Poisson
+              Distribución generador de tráfico -> Poisson
+              
 rama_cacheP2: Sistema de remoción del cache -> LFU - 100mb
-              Distribucíon generador de tráfico -> Poisson
+              Distribución generador de tráfico -> Poisson
+              
 rama_cacheZ1: Sistema de remoción del cache -> LRU - 50mb
-              Distribucíon generador de tráfico -> Zipf
+              Distribución generador de tráfico -> Zipf
+              
 rama_cacheP1: Sistema de remoción del cache -> LFU - 100mb
-              Distribucíon generador de tráfico -> Zipf
+              Distribución generador de tráfico -> Zipf
 
-Cada una de estas ramas tiene exactamente la misma estructura, solo se hicieron los cambios correpondientes en docker-compose.yml para el tipo de cache y tamaño, y los cambios correspondientes en gdt.py para el tipo de distribución seguida por el generador de tráfico.
+Cada una de estas ramas tiene exactamente la misma estructura, sólo se hicieron los cambios correpondientes en docker-compose.yml para el tipo de caché y tamaño y los cambios correspondientes en gdt.py para el tipo de distribución seguida por el generador de tráfico.
 
 ## Arquitectura General
 
 El sistema consta de los siguientes componentes:
 
 - **Scraper**: Obtiene eventos de tráfico (como accidentes, atascos, etc.) desde la API pública del mapa en vivo de Waze. Guarda los eventos únicos en MongoDB.
-- **Base de Datos (MongoDB)**: Almacena de manera persistente los eventos capturados por el scraper.
+- **Base de Datos (MongoDB)**: Almacena de manera persistente los eventos capturados por el Scraper.
 - **Caché (Flask + Redis)**: Expone una API REST para consultar eventos por UUID y guarda resultados temporalmente para acelerar accesos repetidos.
 - **Generador de Tráfico**: Simula consultas concurrentes al sistema usando distribuciones probabilísticas (por ejemplo, Poisson), evaluando el comportamiento de la caché y la base de datos.
 - **Docker Compose**: Orquesta el despliegue de todos los servicios en contenedores separados, facilitando su ejecución conjunta.
@@ -52,7 +55,7 @@ sudo docker-compose up
 ```
 
 El scraper se ejecutará y guardará los datos en formato JSON en el contenedor como volumen para que se mantengan guardados.
-Se levvantaran todos los contenedores y se realizaran consultas en seguida al sistema.
+Se levvantarán todos los contenedores y se realizarán consultas en seguida al sistema.
 
 ## 📂 Estructura del proyecto
 ```bash
@@ -94,11 +97,11 @@ Se levvantaran todos los contenedores y se realizaran consultas en seguida al si
 ## 📌 Notas
 
 - El scraping solo obtiene datos visibles en el mapa en vivo al momento de ejecución.
-- La base de datos aun no esta subida de forma remota a mongo, solo la manejamos de forma local
+- La base de datos aún no esta subida de forma remota a Mongo, sólo la manejamos de forma local.
 
 ## Autoras 
 
-Isidora Gonzalez
+Isidora González
 Natalia Ortega
 
 
