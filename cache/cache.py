@@ -6,7 +6,7 @@ from pymongo import MongoClient
 app = Flask(__name__)
 r = redis.Redis(host='redis', port=6379, decode_responses=True)
 mongo = MongoClient("mongodb://mongo:27017/")
-collection = mongo["trafico"]["eventos10000"]
+collection = mongo["trafico"]["eventos70000"]
 
 @app.route("/evento/<uuid>")
 def get_evento(uuid):
@@ -24,7 +24,7 @@ def get_evento(uuid):
 
 @app.route("/eventos")
 def get_uuids():
-    eventos = list(collection.find({}, {"uuid": 1, "_id": 0}).limit(10000))
+    eventos = list(collection.find({}, {"uuid": 1, "_id": 0}).limit(70000))
     return jsonify(eventos)
 
 if __name__ == "__main__":

@@ -5,7 +5,7 @@ import numpy as np
 API_URL = "http://cache:5000/evento"  # La API de caché escucha en este endpoint
 
 MODELO = "poisson"
-TOTAL_CONSULTAS = 50000
+TOTAL_CONSULTAS = 70000
 
 def esperar_cache_disponible(url, reintentos=10, espera=2):
     for intento in range(reintentos):
