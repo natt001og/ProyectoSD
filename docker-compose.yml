@@ -9,7 +9,7 @@ services:
     volumes:
       - mongodb_data:/data/db
     networks:
-      - redesd
+      redesd: {}  # Formato correcto para networks
 
   redis:
     image: redis:latest
@@ -18,7 +18,7 @@ services:
       - "6379:6379"
     command: redis-server --maxmemory 50mb --maxmemory-policy allkeys-lru
     networks:
-      - redesd
+      redesd: {}
 
   scraper:
     build:
@@ -29,10 +29,11 @@ services:
     depends_on:
       - mongo
     networks:
-      - redesd
+      redesd: {}
 
   cache:
-    build: ./cache
+    build:
+      context: ./cache
     container_name: cache
     ports:
       - "5000:5000"
@@ -40,15 +41,28 @@ services:
       - mongo
       - redis
     networks:
-      - redesd
+      redesd: {}
 
   generador_trafico:
-    build: ./generador_trafico
+    build:
+      context: ./generador_trafico
     container_name: generador_trafico
     depends_on:
       - cache
     networks:
-      - redesd
+      redesd: {}
+
+  pig:
+    build:
+      context: ./docker-pig
+    container_name: pig
+    volumes:
+      - ./docker-pig:/app
+    working_dir: /app
+    stdin_open: true
+    tty: true
+    networks:
+      redesd: {}
 
 networks:
   redesd:
@@ -56,6 +70,8 @@ networks:
 
 volumes:
   mongodb_data:
+    name: mongodb_data  # Definición explícita del volumen
+
 
 
 
