@@ -50,6 +50,17 @@ services:
     networks:
       - redesd
 
+  pig:
+    image: sequenceiq/pig:latest
+    container_name: pig
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./pig_data:/pig_data  # Carpeta local para tus scripts y datos
+    networks:
+      - redesd
+
+
 networks:
   redesd:
     driver: bridge
