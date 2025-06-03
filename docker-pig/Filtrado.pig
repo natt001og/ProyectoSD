@@ -2,7 +2,7 @@
 SET mapreduce.framework.name 'local';
 SET pig.usenewlogicalplan 'false';
 
--- Cargar datos desde el archivo data.tsv en el directorio actual
+-- Cargar datos desde el archivo data.tsv
 raw = LOAD 'data.tsv'
     USING PigStorage('\t') AS (
         country:chararray,
@@ -39,25 +39,25 @@ raw = LOAD 'data.tsv'
         nImages:int
     );
 
--- Filtrar registros inválidos
+-- Filtrar registros válidos (relajado para conservar más datos)
 validos = FILTER raw BY 
     tipo IS NOT NULL AND 
     city IS NOT NULL AND 
-    reportDescription IS NOT NULL AND
     pubMillis IS NOT NULL;
 
--- Normalizar datos
+-- Normalizar datos (ahora aceptamos reportDescription vacío)
 normalizados = FOREACH validos GENERATE
     LOWER(TRIM(city)) AS comuna,
     LOWER(TRIM(tipo)) AS tipo_incidente,
     pubMillis AS timestamp,
-    TRIM(reportDescription) AS descripcion,
-    nThumbsUp AS votos_positivos,
-    reliability AS confiabilidad;
+    (reportDescription IS NOT NULL ? TRIM(reportDescription) : '') AS descripcion,
+    (nThumbsUp IS NOT NULL ? nThumbsUp : 0.0) AS votos_positivos,
+    (reliability IS NOT NULL ? reliability : 0) AS confiabilidad,
+    uuid AS identificador_unico;
 
--- Eliminar duplicados
+-- Eliminar duplicados solo si son 100% idénticos en los campos clave
 limpios = DISTINCT normalizados;
 
--- Guardar salida en el directorio actual
+-- Guardar resultados
 STORE limpios INTO 'eventos_limpios.tsv'
     USING PigStorage('\t');

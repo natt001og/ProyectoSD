@@ -22,7 +22,7 @@ conteo_por_comuna_tipo = FOREACH agrupados GENERATE
     AVG(datos.votos_positivos) AS avg_votos,
     AVG(datos.confiabilidad) AS avg_confiabilidad;
 
--- 2. Análisis temporal simplificado (sin piggybank)
+-- 2. Análisis temporal
 con_fechas = FOREACH datos GENERATE
     comuna,
     tipo_incidente,
