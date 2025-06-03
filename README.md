@@ -26,6 +26,7 @@ El sistema consta de los siguientes componentes:
 - **Base de Datos (MongoDB)**: Almacena de manera persistente los eventos capturados por el Scraper.
 - **Caché (Flask + Redis)**: Expone una API REST para consultar eventos por UUID y guarda resultados temporalmente para acelerar accesos repetidos.
 - **Generador de Tráfico**: Simula consultas concurrentes al sistema usando distribuciones probabilísticas (por ejemplo, Poisson), evaluando el comportamiento de la caché y la base de datos.
+- **Filtrado y Procesamiento (Apache Pig)**: Procesa los datos recolectados, aplicando transformaciones, limpieza y agregaciones, todo ejecutado dentro de un contenedor Docker que simula un entorno Hadoop local.
 - **Docker Compose**: Orquesta el despliegue de todos los servicios en contenedores separados, facilitando su ejecución conjunta.
 
 ---
@@ -54,6 +55,20 @@ sudo docker-compose up
 
 ```
 
+## Sobre la ejecución del procesamiento y filtrado de datos 
+
+```bash
+
+docker-compose build pig  # esto es para crear la imagen de pig
+docker-compose up -d pig # iniciar el contenedor
+docker exec -it pig bash # acceder al contenedor
+
+#ejecución de los sprits
+pig -x local homogeneizacion.pig 
+pig -x local procesamiento.pig
+
+```
+
 El scraper se ejecutará y guardará los datos en formato JSON en el contenedor como volumen para que se mantengan guardados.
 Se levvantarán todos los contenedores y se realizarán consultas en seguida al sistema.
 
@@ -61,30 +76,43 @@ Se levvantarán todos los contenedores y se realizarán consultas en seguida al 
 ```bash
 .
 ├── scraper/              # Scraper de eventos desde Waze
-│   └── scraper.py
-    └── Dockerfile
-    └── requirements.txt
+│   ├── scraper.py
+│   ├── Dockerfile
+│   └── requirements.txt
+│
 ├── cache/                # Servidor Flask + Redis como caché
-│   └── cache.py
-    └── Dockerfile
-├── generador_trafico/    # Simula tráfico usando distribución de Poisson
-│   └── generador.py
-    └── Dockerfile
-├── docker-compose.yml    # Orquestación de contenedores
+│   ├── cache.py
+│   └── Dockerfile
+│
+├── generador_trafico/    # Simula tráfico usando distintas distribuciones
+│   ├── generador.py
+│   └── Dockerfile
+│
+├── docker-pig/           # Módulo de filtrado y análisis con Apache Pig
+│   ├── Dockerfile        # Imagen personalizada de Apache Pig
+│   ├── data.tsv          # Datos crudos de eventos
+│   ├── Filtrado.pig
+│   └── procesamiento.pig
+│
+├── docker-compose.yml    # Orquestación de todos los contenedores
 └── README.md             # Este archivo
 
 ```
 ## 🛠 Tecnologías utilizadas
 
-    Python (scraping, servidor REST, generación de tráfico)
+Python (scraping, servidor REST, generación de tráfico)
 
-    MongoDB (almacenamiento persistente)
+MongoDB (almacenamiento)
 
-    Redis (sistema de caché con TTL parametrizable)
+Redis (caché con políticas LRU/LFU)
 
-    Flask (API REST para interacción entre módulos)
+Flask (API REST)
 
-    Docker & Docker Compose (despliegue modular)
+Apache Pig (procesamiento tipo MapReduce)
+
+Hadoop (modo local para Pig)
+
+Docker & Docker Compose (contenedorización y despliegue)
 
 ## Estado actual
 
