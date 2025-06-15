@@ -16,7 +16,7 @@ services:
     container_name: redis
     ports:
       - "6379:6379"
-    command: redis-server --maxmemory 50mb --maxmemory-policy allkeys-lfu
+    command: redis-server --maxmemory 50mb --maxmemory-policy allkeys-lru
     networks:
       - redesd
 
@@ -49,6 +49,17 @@ services:
       - cache
     networks:
       - redesd
+
+  pig:
+    image: sequenceiq/pig:latest
+    container_name: pig
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./pig_data:/pig_data  # Carpeta local para tus scripts y datos
+    networks:
+      - redesd
+
 
 networks:
   redesd:
