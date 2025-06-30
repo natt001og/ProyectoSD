@@ -23,7 +23,7 @@ def get_evento(uuid):
 
 @app.route("/eventos")
 def get_uuids():
-    eventos = list(collection.find({}, {"uuid": 1, "_id": 0}).limit(10000))
+    eventos = list(collection.find({}, {"uuid": 1, "_id": 0}).limit(1000))
     return jsonify(eventos)
 
 if __name__ == "__main__":

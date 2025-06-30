@@ -26,6 +26,7 @@ services:
     container_name: scraper
     volumes:
       - ./scraper:/app
+    command: ["tail", "-f", "/dev/null"]
     depends_on:
       - mongo
     networks:
@@ -39,6 +40,7 @@ services:
     depends_on:
       - mongo
       - redis
+    command: ["python", "cache.py"]
     networks:
       - redesd
 
@@ -47,19 +49,46 @@ services:
     container_name: generador_trafico
     depends_on:
       - cache
+    command: ["python", "gdt.py"]
     networks:
       - redesd
 
   pig:
-    image: sequenceiq/pig:latest
+    build:
+      context: ./docker-pig
     container_name: pig
     stdin_open: true
     tty: true
     volumes:
-      - ./pig_data:/pig_data  # Carpeta local para tus scripts y datos
+      - ./docker-pig:/app
     networks:
       - redesd
 
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.0
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - redesd
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.10.1
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - redesd
 
 networks:
   redesd:
@@ -67,8 +96,4 @@ networks:
 
 volumes:
   mongodb_data:
-
-
-
-
-
+  elasticsearch_data:

@@ -7,4 +7,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY scraper.py .
 
-CMD ["python", "scraper.py"]
+# Mantiene el contenedor vivo para poder ejecutar comandos dentro
+CMD ["tail", "-f", "/dev/null"]

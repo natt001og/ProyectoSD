@@ -6,4 +6,6 @@ COPY cache.py .
 
 RUN pip install flask pymongo redis
 
+EXPOSE 5000
+
 CMD ["python", "cache.py"]

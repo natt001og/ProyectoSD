@@ -1,5 +1,7 @@
 import requests
+import time
 from pymongo import MongoClient
+from pymongo.errors import BulkWriteError
 
 # Conexión a MongoDB
 client = MongoClient("mongodb://mongo:27017/")
@@ -27,36 +29,38 @@ def capturar_eventos():
     }
 
     eventos_totales = 0
-    while eventos_totales < 10500:
+    iteraciones_sin_nuevos = 0
+
+    while eventos_totales < 10500 and iteraciones_sin_nuevos < 5:
         response = requests.get(url, params=params, headers=headers)
         if response.status_code == 200:
             data = response.json()
             eventos = data.get("alerts", [])
             if eventos:
-                collection.insert_many(eventos)
-                eventos_totales += len(eventos)
-                print(f"Se guardaron {len(eventos)} eventos. Total acumulado: {eventos_totales}")
+                try:
+                    result = collection.insert_many(eventos, ordered=False)
+                    insertados = len(result.inserted_ids)
+                    eventos_totales += insertados
+                    print(f"{insertados} insertados. Total acumulado: {eventos_totales}")
+                    iteraciones_sin_nuevos = 0
+                except BulkWriteError as bwe:
+                    errores = bwe.details.get("writeErrors", [])
+                    duplicados = sum(1 for e in errores if e.get("code") == 11000)
+                    insertados = len(eventos) - duplicados
+                    eventos_totales += insertados
+                    print(f"{insertados} insertados, {duplicados} duplicados. Total acumulado: {eventos_totales}")
+                    if insertados == 0:
+                        iteraciones_sin_nuevos += 1
             else:
-                print("No se encontraron eventos nuevos en este bloque.")
+                print("No se encontraron eventos.")
+                iteraciones_sin_nuevos += 1
         else:
             print(f"Error en la solicitud: {response.status_code}")
+            break
+        
+        time.sleep(2)  # Espera opcional para no saturar el servidor
 
-    if response.status_code == 200:
-        data = response.json()
-        alertas = data.get("alerts", [])
-
-        nuevas = 0
-        for alerta in alertas:
-            try:
-                collection.insert_one(alerta)
-                nuevas += 1
-            except Exception as e:
-                if "duplicate key error" not in str(e):
-                    print("Error al insertar:", e)
-
-        print(f"{nuevas} nuevas alertas guardadas en MongoDB.")
-    else:
-        print("Error al obtener datos:", response.status_code)
+    print("Scraper finalizado.")
 
 if __name__ == "__main__":
     capturar_eventos()

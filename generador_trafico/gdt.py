@@ -1,10 +1,11 @@
+import os
 import time
 import requests
 import numpy as np
 
-API_URL = "http://cache:5000/evento"
+API_URL = os.getenv("CACHE_URL", "http://localhost:5000/evento")
 MODELO = "poisson"
-TOTAL_CONSULTAS = 50000
+TOTAL_CONSULTAS = 5000
 
 def esperar_cache_disponible(url, reintentos=10, espera=2):
     for intento in range(reintentos):
@@ -27,7 +28,7 @@ def obtener_uuid_random_zipf(eventos, a=2.0):
 
 def main():
     inicio = time.time()
-    response = esperar_cache_disponible("http://cache:5000/eventos")
+    response = esperar_cache_disponible(f"{API_URL}s")  # nota el '/eventos' es API_URL + 's'
     eventos = response.json()
     print(f"Se obtuvieron {len(eventos)} eventos.")
 
