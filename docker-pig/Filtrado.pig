@@ -39,13 +39,13 @@ raw = LOAD 'data.tsv'
         nImages:int
     );
 
--- Filtrar registros válidos (relajado para conservar más datos)
+-- Filtrar registros válidos 
 validos = FILTER raw BY 
     tipo IS NOT NULL AND 
     city IS NOT NULL AND 
     pubMillis IS NOT NULL;
 
--- Normalizar datos (ahora aceptamos reportDescription vacío)
+-- Normalizar datos
 normalizados = FOREACH validos GENERATE
     LOWER(TRIM(city)) AS comuna,
     LOWER(TRIM(tipo)) AS tipo_incidente,

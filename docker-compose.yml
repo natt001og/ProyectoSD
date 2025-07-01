@@ -16,7 +16,7 @@ services:
     container_name: redis
     ports:
       - "6379:6379"
-    command: redis-server --maxmemory 50mb --maxmemory-policy allkeys-lru
+    command: redis-server --maxmemory 50mb --maxmemory-policy allkeys-lfu
     networks:
       - redesd
 
@@ -87,6 +87,32 @@ services:
       - "5601:5601"
     depends_on:
       - elasticsearch
+    networks:
+      - redesd
+
+  indexador:
+    build: ./elastic
+    container_name: indexador
+    volumes:
+      - ./elastic:/app
+      - ./docker-pig/salida:/data/pig_output  # monta la salida procesada de Pig
+    depends_on:
+      - elasticsearch
+      - mongo
+    command: ["python", "indexar.py"]
+    networks:
+      - redesd
+  cache-worker:
+    build:
+      context: ./cache-worker
+    container_name: cache-worker
+    depends_on:
+      - elasticsearch
+      - redis
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - REDIS_HOST=redis
+      - UPDATE_INTERVAL=300  # 5 minutos
     networks:
       - redesd
 
